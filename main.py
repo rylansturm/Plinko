@@ -95,7 +95,7 @@ while True:
             print()
 
         if int(choice) == 3:
-            """ choosing to drop multiple chips in one multiple slots """
+            """ choosing to drop multiple chips in each slot """
             while True:
                 try:
                     num_choice = int(input('Pick a number of coins to drop into each slot (1+)\n\t'))
@@ -143,20 +143,18 @@ while True:
                             print(messages[3] % (chip, num_choice-chip))
             print()
             print('Your average payout (per chip) on each slot was as follows:')
-            for key in prizes:
-                print('slot {}: ${}/chip'.format(key, '%.2f' % (sum(prizes[key])/len(prizes[key]))))
-                sleep(1.25)
-            sleep(1)
-            print()
-            print('Your total payout on each slot was as follows:')
+            sleep(1.25)
             best_slot = 0
             for key in prizes:
-                print('slot {}: ${}'.format(key, sum(prizes[key])))
-                total_payout += sum(prizes[key])
-                if sum(prizes[key]) >= sum(prizes[best_slot]):
+                total = sum(prizes[key])
+                total_payout += total
+                if total >= sum(prizes[best_slot]):
                     best_slot = key
+                avg = total/len(prizes[key])
+                print('slot {}: ${}/chip\t\t(${} total)'.format(key, '%.2f' % (sum(prizes[key])/len(prizes[key])),
+                                                                total))
                 sleep(1.25)
-            sleep(1.5)
+            sleep(1)
             print()
             print('Total Payout was ${}, averaging ${}/chip overall'.format(total_payout,
                                                                             '%.2f' % (total_payout/(9*num_choice))))

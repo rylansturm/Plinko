@@ -107,16 +107,7 @@ while True:
                         break
                 except ValueError:
                     print('Needs to be a number (1+)')
-            prizes = {0: [],
-                      1: [],
-                      2: [],
-                      3: [],
-                      4: [],
-                      5: [],
-                      6: [],
-                      7: [],
-                      8: []
-                      }
+            prizes = {}
             total_payout = 0
             mark = datetime.datetime.now()
             message_count = 0
@@ -126,6 +117,8 @@ while True:
                         '%s down, %s to go']
             for chip in range(num_choice):
                 for slot in range(9):
+                    if chip == 0:
+                        prizes[slot] = []
                     b = Board(slot)
                     prizes[slot].append(int(b.prize[1:]))
                     if chip % 1000 == 0 and slot == 0:

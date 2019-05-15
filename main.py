@@ -57,7 +57,8 @@ while True:
                     print('Needs to be a number [1-32]')
             Config.col_from_center = new_col_from_center
             Config.rows = new_rows
-            b = Board(0, Config.col_from_center, Config.rows)
+            Config.prizes = Board.get_prizes(Config.col_from_center)
+            b = Board(0, Config.col_from_center, Config.rows, Config.prizes)
             print('Your new board looks like this!')
             sleep(1)
             b.print_board()
@@ -65,7 +66,7 @@ while True:
             print('Your new prizes are as follows:')
             sleep(1)
             for prize in range(len(b.prizes)):
-                print('column {}:\t${}'.format(prize, b.prizes[prize]))
+                print('column {}:\t${}'.format(Config.header_list[prize], b.prizes[prize]))
                 sleep(.1)
 
         if int(choice) == 4:
@@ -82,7 +83,7 @@ while True:
                 else:
                     break
             print('you dropped it in {}'.format(slot_choice))
-            b = Board(Config.index(slot_choice), Config.col_from_center, Config.rows)
+            b = Board(Config.index(slot_choice), Config.col_from_center, Config.rows, Config.prizes)
             b.print_board(show_path=True, pause=0.25)
             print()
             print('You won ${}!'.format(b.prize))
@@ -118,7 +119,7 @@ while True:
                 else:
                     break
             for i in range(num_choice):
-                b = Board(Config.index(slot_choice), Config.col_from_center, Config.rows)
+                b = Board(Config.index(slot_choice), Config.col_from_center, Config.rows, Config.prizes)
                 if print_choice == 'y':
                     b.print_board(show_path=True, pause=1/num_choice)
                 prizes.append(b.prize)
@@ -155,7 +156,7 @@ while True:
                 for slot in slot_choices:
                     if chip == 0:
                         prizes[slot] = []
-                    b = Board(Config.index(slot), Config.col_from_center, Config.rows)
+                    b = Board(Config.index(slot), Config.col_from_center, Config.rows, Config.prizes)
                     prizes[slot].append(b.prize)
                     if chip % 1000 == 0 and slot == 0:
                         time_passed = int((datetime.datetime.now() - mark).total_seconds())
@@ -182,7 +183,7 @@ while True:
                 avg = total/len(prizes[key])
                 print('slot {}: ${}/chip\t\t(${} total)'.format(key, '%.2f' % (sum(prizes[key])/len(prizes[key])),
                                                                 total))
-                sleep(1.25)
+                sleep(5/len(prizes[key]))
             sleep(1)
             print()
             print('Total Payout was ${}, averaging ${}/chip overall'.format(

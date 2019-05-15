@@ -1,6 +1,7 @@
 class Config:
     rows = 6
     col_from_center = 4
+    prizes = None
     header_list = list('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!')
 
     @staticmethod

@@ -6,13 +6,13 @@ from config import Config
 class Board:
     header_list = Config.header_list
 
-    def __init__(self, start=0, col_from_center=4, rows=6):
+    def __init__(self, start=0, col_from_center=4, rows=6, prizes=None):
         try:
             self.start = start
             self.col_from_center = col_from_center
             self.rows = rows
             self.path = self.get_path()
-            self.prizes = self.get_prizes(col_from_center)
+            self.prizes = prizes if prizes else self.get_prizes(col_from_center)
             self.prize = self.prizes[int(self.path[-1])]
         except KeyError:
             print('KeyError: starting point is out of range')
@@ -64,18 +64,19 @@ class Board:
     @staticmethod
     def get_prizes(col_from_center):
         center = col_from_center
-        prizes = {center-1: 0,
-                  center: 10000,
-                  center+1: 0
-                  }
+        prizes = {}
         prize_list = [10000, 0, 1000, 500, 100, 75, 50, 25, 15, 10, 5, 0]
         if col_from_center + 1 > len(prize_list):
-            for col in range(2, col_from_center+1):
-                factor = col*7
-                value = int(prize_list[0]/factor)
-                prizes[center+col] = value
-                prizes[center-col] = value
+            print('On boards this large, the prizes are randomized. Have fun!')
+            sleep(1.5)
+            for col in range(col_from_center*2+1):
+                value = int((prize_list[0] * random.random()) / (3/random.random()))
+                prizes[col] = value
         else:
+            prizes = {center - 1: 0,
+                      center: 10000,
+                      center + 1: 0
+                      }
             for col in range(2, col_from_center+1):
                 prizes[center+col], prizes[center-col] = prize_list[col], prize_list[col]
         return prizes

@@ -2,14 +2,18 @@ from app.board import Board
 from time import sleep
 from app import instructions
 import datetime
+from config import Config
 
 
 while True:
     """ each turn starts with this prompt """
+    slot_choices = Config.header_list[0:Config.get_columns()]
+
     choices = ['[1]Drop one chip into one slot',
                '[2]Drop multiple chips into one slot',
                '[3]Drop multiple chips into each slot',
                '[4]Quit the program',
+               '[5]Modify the board'
                ]
     print('\t' + '\n\t'.join(choices))
     while True:
@@ -20,11 +24,49 @@ while True:
             print('Needs to be a number (1-4)')
     print()
 
-    if choice not in list(range(1, 5)):
+    if choice not in list(range(1, 6)):
         """ prevents user from entering any non valid choice """
         print("That won't work... try picking a valid option (1-4)")
     else:
         """ if any correct option is picked... """
+
+        if int(choice) == 5:
+            """ modify the board dimensions """
+            while True:
+                try:
+                    new_rows = int(input('How many rows would you like the board to have? [1-64]\n\t'))
+                    if new_rows > 64:
+                        print('Let\'s not go too crazy. Pick a number from 1-64')
+                    elif new_rows < 1:
+                        print('That doesn\'t give you any room to play... try again!')
+                    else:
+                        break
+                except ValueError:
+                    print('Needs to be a number [1-64]')
+            while True:
+                try:
+                    new_col_from_center = int(input(
+                        'The center is our jackpot. How many columns do you want on either side? [1-31]\n\t'))
+                    if new_col_from_center > 31:
+                        print('Let\'s not go too crazy. Pick a number from 1-31')
+                    elif new_col_from_center < 1:
+                        print('That doesn\'t give you any room to play... try again!')
+                    else:
+                        break
+                except ValueError:
+                    print('Needs to be a number [1-32]')
+            Config.col_from_center = new_col_from_center
+            Config.rows = new_rows
+            b = Board(0, Config.col_from_center, Config.rows)
+            print('Your new board looks like this!')
+            sleep(1)
+            b.print_board()
+            sleep(1.5)
+            print('Your new prizes are as follows:')
+            sleep(1)
+            for prize in range(len(b.prizes)):
+                print('column {}:\t${}'.format(prize, b.prizes[prize]))
+                sleep(.1)
 
         if int(choice) == 4:
             """ if the user chooses to exit the game, I'ma be snarky 'bout it """
@@ -34,19 +76,16 @@ while True:
         if int(choice) == 1:
             """ dropping one chip into one slot """
             while True:
-                try:
-                    choice = int(input('Pick a slot to drop your coin [0-8]\n\t'))
-                    if choice not in list(range(9)):
-                        print('Gotta drop it on the board, sir...')
-                    else:
-                        break
-                except ValueError:
-                    print('Needs to be a number (0-8)')
-            print('you dropped it in {}'.format(choice))
-            b = Board(choice)
+                slot_choice = input('Pick a slot to drop your coin [{}]\n\t'.format(''.join(slot_choices)))
+                if slot_choice not in slot_choices:
+                    print('Gotta drop it on the board, sir... [{}]'.format(''.join(slot_choices)))
+                else:
+                    break
+            print('you dropped it in {}'.format(slot_choice))
+            b = Board(Config.index(slot_choice), Config.col_from_center, Config.rows)
             b.print_board(show_path=True, pause=0.25)
             print()
-            print('You won {}!'.format(b.prize))
+            print('You won ${}!'.format(b.prize))
             print()
             sleep(1.5)
 
@@ -64,14 +103,11 @@ while True:
                 except ValueError:
                     print('Needs to be a number (1+)')
             while True:
-                try:
-                    slot_choice = int(input('Pick a slot to drop your coins [0-8]\n\t'))
-                    if slot_choice not in list(range(9)):
-                        print('Gotta drop it on the board, sir...')
-                    else:
-                        break
-                except ValueError:
-                    print('Needs to be a number (0-8)')
+                slot_choice = input('Pick a slot to drop your coins [{}]\n\t'.format(''.join(slot_choices)))
+                if slot_choice not in slot_choices:
+                    print('Gotta drop it on the board, sir...')
+                else:
+                    break
             prizes = []
             while True:
                 print_choice = input('Do you want to print out the board for each run? [y/n]\n\t')
@@ -82,10 +118,10 @@ while True:
                 else:
                     break
             for i in range(num_choice):
-                b = Board(slot_choice)
+                b = Board(Config.index(slot_choice), Config.col_from_center, Config.rows)
                 if print_choice == 'y':
                     b.print_board(show_path=True, pause=1/num_choice)
-                prizes.append(int(b.prize[1:]))
+                prizes.append(b.prize)
             print()
             print('Your average payout (per chip) was ${}'.format('%.2f' % (sum(prizes)/len(prizes))))
             sleep(1)
@@ -116,11 +152,11 @@ while True:
                         'I promise I\'m still working. %s simulations ran so far',
                         '%s down, %s to go']
             for chip in range(num_choice):
-                for slot in range(9):
+                for slot in slot_choices:
                     if chip == 0:
                         prizes[slot] = []
-                    b = Board(slot)
-                    prizes[slot].append(int(b.prize[1:]))
+                    b = Board(Config.index(slot), Config.col_from_center, Config.rows)
+                    prizes[slot].append(b.prize)
                     if chip % 1000 == 0 and slot == 0:
                         time_passed = int((datetime.datetime.now() - mark).total_seconds())
                         if time_passed > 2 and message_count == 0:
@@ -137,7 +173,7 @@ while True:
             print()
             print('Your average payout (per chip) on each slot was as follows:')
             sleep(1.25)
-            best_slot = 0
+            best_slot = '0'
             for key in prizes:
                 total = sum(prizes[key])
                 total_payout += total
@@ -153,6 +189,6 @@ while True:
                                                                             '%.2f' % (total_payout/(9*num_choice))))
             sleep(1.5)
             print()
-            print("Based solely on these numbers, slot #{} will be your best bet.".format(best_slot))
+            print("Based solely on these numbers, slot {} will be your best bet.".format(best_slot))
             sleep(1.5)
             print()

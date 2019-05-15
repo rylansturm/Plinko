@@ -1,32 +1,30 @@
 import random
 from time import sleep
+from config import Config
 
 
 class Board:
-    prizes = {0: '$100',
-              1: '$500',
-              2: '$1000',
-              3: '$0',
-              4: '$10000',
-              5: '$0',
-              6: '$1000',
-              7: '$500',
-              8: '$100',
-              }
+    header_list = Config.header_list
 
-    def __init__(self, start=0):
-        self.start = start
-        self.path = self.get_path()
-        self.prize = self.prizes[int(self.path[-1])]
+    def __init__(self, start=0, col_from_center=4, rows=6):
+        try:
+            self.start = start
+            self.col_from_center = col_from_center
+            self.rows = rows
+            self.path = self.get_path()
+            self.prizes = self.get_prizes(col_from_center)
+            self.prize = self.prizes[int(self.path[-1])]
+        except KeyError:
+            print('KeyError: starting point is out of range')
 
     def __repr__(self):
-        return '<Board object starting on {}'.format(self.start)
+        return '<Board object {}x{} starting on {}>'.format(self.col_from_center*2+1, self.rows, self.start)
 
     def get_path(self):
         loc = float(self.start)
         path = [loc]
-        for row in range(12):
-            if loc in [0, 8]:
+        for row in range(self.rows*2):
+            if loc in [0, self.col_from_center*2]:
                 loc += 0.5 if not loc else -0.5
             else:
                 loc += 0.5 if random.randint(0, 1) else -0.5
@@ -34,17 +32,26 @@ class Board:
         return path
 
     def print_board(self, show_path=False, pause=0.25):
+        columns = (self.col_from_center*2)+1
         header = [
-            list('|0|1|2|3|4|5|6|7|8|'),
-            list('|                 |')
+            list('|' + '|'.join([i for i in self.header_list[0:columns]]) + '|'),
+            list('|' + (' ' * ((columns * 2) - 1)) + '|')
         ]
         playable_rows = []
-        footer = [
-            list('|S|M|L|_|G|_|L|M|S|')
-        ]
+        if columns == 9:
+            footer = [
+                list('|S|M|L|_|G|_|L|M|S|')
+            ]
+        else:
+            front = '|x' * (self.col_from_center-1)
+            middle = '| |G| |'
+            back = 'x|' * (self.col_from_center-1)
+            footer = [
+                list(front + middle + back)
+            ]
         header[1][int(self.path[0]*2)+1] = '@' if show_path else ' '
-        for i in range(12):
-            row = list('|* * * * * * * * *|') if i % 2 == 0 else list('| * * * * * * * * |')
+        for i in range(self.rows*2):
+            row = list('|' + '* ' * (columns-1) + '*|') if i % 2 == 0 else list('|' + ' *' * (columns-1) + ' |')
             if show_path:
                 index = int(self.path[i+1] * 2) + 1
                 row[index] = '@'
@@ -54,4 +61,21 @@ class Board:
                 print(''.join(row))
                 sleep(pause if show_path else 0)
 
-
+    @staticmethod
+    def get_prizes(col_from_center):
+        center = col_from_center
+        prizes = {center-1: 0,
+                  center: 10000,
+                  center+1: 0
+                  }
+        prize_list = [10000, 0, 1000, 500, 100, 75, 50, 25, 15, 10, 5, 0]
+        if col_from_center + 1 > len(prize_list):
+            for col in range(2, col_from_center+1):
+                factor = col*7
+                value = int(prize_list[0]/factor)
+                prizes[center+col] = value
+                prizes[center-col] = value
+        else:
+            for col in range(2, col_from_center+1):
+                prizes[center+col], prizes[center-col] = prize_list[col], prize_list[col]
+        return prizes

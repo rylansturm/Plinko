@@ -185,8 +185,8 @@ while True:
                 sleep(1.25)
             sleep(1)
             print()
-            print('Total Payout was ${}, averaging ${}/chip overall'.format(total_payout,
-                                                                            '%.2f' % (total_payout/(9*num_choice))))
+            print('Total Payout was ${}, averaging ${}/chip overall'.format(
+                total_payout, '%.2f' % (total_payout/(len(slot_choices)*num_choice))))
             sleep(1.5)
             print()
             print("Based solely on these numbers, slot {} will be your best bet.".format(best_slot))
